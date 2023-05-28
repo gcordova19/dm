@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>gabrielacordova</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="GabrielaCordova_files/libs/clipboard/clipboard.min.js"></script>
+<script src="GabrielaCordova_files/libs/quarto-html/quarto.js"></script>
+<script src="GabrielaCordova_files/libs/quarto-html/popper.min.js"></script>
+<script src="GabrielaCordova_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="GabrielaCordova_files/libs/quarto-html/anchor.min.js"></script>
+<link href="GabrielaCordova_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="GabrielaCordova_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="GabrielaCordova_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="GabrielaCordova_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="GabrielaCordova_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+<p>Vasmos a cargar el dataset de AirBnB descargado de <a href="https://public.opendatasoft.com/explore/dataset/airbnb-listings/export/?disjunctive.host_verifications&amp;disjunctive.amenities&amp;disjunctive.features&amp;q=Madrid&amp;dataChart=eyJxdWVyaWVzIjpbeyJjaGFydHMiOlt7InR5cGUiOiJjb2x1bW4iLCJmdW5jIjoiQ09VTlQiLCJ5QXhpcyI6Imhvc3RfbGlzdGluZ3NfY291bnQiLCJzY2llbnRpZmljRGlzcGxheSI6dHJ1ZSwiY29sb3IiOiJyYW5nZS1jdXN0b20ifV0sInhBeGlzIjoiY2l0eSIsIm1heHBvaW50cyI6IiIsInRpbWVzY2FsZSI6IiIsInNvcnQiOiIiLCJzZXJpZXNCcmVha2Rvd24iOiJyb29tX3R5cGUiLCJjb25maWciOnsiZGF0YXNldCI6ImFpcmJuYi1saXN0aW5ncyIsIm9wdGlvbnMiOnsiZGlzanVuY3RpdmUuaG9zdF92ZXJpZmljYXRpb25zIjp0cnVlLCJkaXNqdW5jdGl2ZS5hbWVuaXRpZXMiOnRydWUsImRpc2p1bmN0aXZlLmZlYXR1cmVzIjp0cnVlfX19XSwidGltZXNjYWxlIjoiIiwiZGlzcGxheUxlZ2VuZCI6dHJ1ZSwiYWxpZ25Nb250aCI6dHJ1ZX0%3D&amp;location=16,41.38377,2.15774&amp;basemap=jawg.streets">aquí</a></p>
+<p><img src="descargar.png" class="img-fluid"></p>
+<pre class="{r}"><code>airbnb&lt;-read.csv('airbnb-listings.csv',sep = ';')
+options(repr.plot.height=4,repr.plot.width=6,repr.plot.res = 300)
+</code></pre>
+<pre class="{r}"><code>print(names(airbnb))</code></pre>
+<ol type="1">
+<li>Vamos a quedarnos con las columnas de mayor interés: ‘City’,‘Room.Type’,‘Neighbourhood’,‘Accommodates’,‘Bathrooms’,‘Bedrooms’,‘Beds’,‘Price’,‘Square.Feet’,‘Guests.Included’,‘Extra.People’,‘Review.Scores.Rating’,‘Latitude’, ‘Longitude’ Nos quedarmos solo con las entradas de Madrid para Room.Type==“Entire home/apt” y cuyo barrio (Neighbourhood) no está vacio ’‘. Podemos eliminar las siguientes columnas que ya no son necesarias: “Room.Type”,’City’ Llama a nuevo dataframe df_madrid.</li>
+</ol>
+<pre class="{r}"><code>filtered_airbnb &lt;- airbnb[, c('City', 'Room.Type', 'Neighbourhood', 'Accommodates', 'Bathrooms', 'Bedrooms', 'Beds', 'Price', 'Square.Feet', 'Guests.Included', 'Extra.People', 'Review.Scores.Rating', 'Latitude', 'Longitude')]
+
+
+df_madrid &lt;- filtered_airbnb[filtered_airbnb$City == "Madrid" &amp; filtered_airbnb$Room.Type == "Entire home/apt" &amp; filtered_airbnb$Neighbourhood != "", ]
+
+df_madrid &lt;- df_madrid[, !(names(df_madrid) %in% c("Room.Type", "City"))]
+
+print(df_madrid)
+</code></pre>
+<pre class="{r}"><code>print(names(df_madrid))</code></pre>
+<hr>
+<ol start="2" type="1">
+<li>Crea una nueva columna llamada Square.Meters a partir de Square.Feet. Recuerda que un pie cuadrado son 0.092903 metros cuadrados.</li>
+</ol>
+<pre class="{r}"><code>
+df_madrid$Square.Meters &lt;- df_madrid$Square.Feet * 0.092903
+print(names(df_madrid))</code></pre>
+<hr>
+<ol start="3" type="1">
+<li>¿Que porcentaje de los apartamentos no muestran los metros cuadrados? Es decir, ¿cuantos tienen NA en Square.Meters?</li>
+</ol>
+<pre class="{r}"><code>
+cuantos_NA &lt;- sum(is.na(df_madrid$Square.Meters))
+
+porcentage_NA &lt;- (cuantos_NA / nrow(df_madrid)) * 100
+
+print(cuantos_NA)
+print(nrow(df_madrid))
+print(nrow(df_madrid)-cuantos_NA)
+print(porcentage_NA)</code></pre>
+<hr>
+<ol start="4" type="1">
+<li>De todos los apartamentos que tienen un valor de metros cuadrados diferente de NA ¿Que porcentaje de los apartamentos tienen 0 metros cuadrados?</li>
+</ol>
+<pre class="{r}"><code>zero_mc &lt;- sum(!is.na(df_madrid$Square.Meters) &amp; (df_madrid$Square.Meters==0))
+num_no_NA &lt;- nrow(df_madrid)-cuantos_NA
+
+percentage_zero &lt;- (zero_mc / num_no_NA) * 100
+
+print(zero_mc)
+print(num_no_NA)
+print(percentage_zero)
+</code></pre>
+<hr>
+<ol start="5" type="1">
+<li>Reemplazar todos los 0m^2 por NA</li>
+</ol>
+<pre class="{r}"><code>
+
+df_madrid$Square.Meters[df_madrid$Square.Meters == 0] &lt;- NA
+
+print(df_madrid)</code></pre>
+<hr>
+<p>Hay muchos NAs, vamos a intentar crear un modelo que nos prediga cuantos son los metros cuadrados en función del resto de variables para tratar de rellenar esos NA. Pero <strong>antes de crear el modelo</strong> vamos a hacer: * pintar el histograma de los metros cuadrados y ver si tenemos que filtrar algún elemento más. * crear una variable sintética nueva basada en la similitud entre barrios que usaremos en nuestro modelo.</p>
+<ol start="6" type="1">
+<li>Pinta el histograma de los metros cuadrados y ver si tenemos que filtrar algún elemento más</li>
+</ol>
+<pre class="{r}"><code>
+print(df_madrid$Square.Meter)
+library(ggplot2)
+
+df_madrid_sinNA &lt;- df_madrid[!is.na(df_madrid$Square.Meters), ]
+
+# Pintar el histograma de los metros cuadrados
+ggplot(df_madrid_sinNA, aes(x = Square.Meters)) +
+  geom_histogram(binwidth = 5) +
+  scale_x_continuous(breaks = seq(0, max(df_madrid_sinNA$Square.Meters), 20)) +
+
+  labs(title = "Histograma",
+       x = "Metros Cuadrados",
+       y = "Frecuencia")
+#parece que hay valores bajos y alguno muy alto</code></pre>
+<hr>
+<ol start="7" type="1">
+<li>Asigna el valor NA a la columna Square.Meters de los apartamentos que tengan menos de 20 m^2</li>
+</ol>
+<pre class="{r}"><code>
+df_madrid_sinNA$Square.Meters[df_madrid_sinNA$Square.Meters &lt; 20] &lt;- NA
+print(df_madrid_sinNA$Square.Meter)
+library(ggplot2)
+
+df_madrid_sinNA &lt;- df_madrid_sinNA[!is.na(df_madrid_sinNA$Square.Meters), ]
+
+# Pintar el histograma de los metros cuadrados
+ggplot(df_madrid_sinNA, aes(x = Square.Meters)) +
+  geom_histogram(binwidth = 5) +
+  scale_x_continuous(breaks = seq(0, max(df_madrid_sinNA$Square.Meters), 20)) +
+
+  labs(title = "Histograma",
+       x = "Metros Cuadrados",
+       y = "Frecuencia")
+</code></pre>
+<hr>
+<ol start="8" type="1">
+<li>Existen varios Barrios que todas sus entradas de Square.Meters son NA, vamos a eliminar del dataset todos los pisos que pertenecen a estos barrios.</li>
+</ol>
+<pre class="{r}"><code>
+# Barrios con Square.Meters como NA
+barrios_NA &lt;- unique(df_madrid_sinNA$Neighbourhood[is.na(df_madrid_sinNA$Square.Meters)])
+#print(unique(df_madrid_sinNA$Neighbourhood))
+# Filtrar el dataset eliminando los pisos de los barrios con Square.Meters NA
+df_madrid_filtrado &lt;- df_madrid_sinNA[!(df_madrid_sinNA$Neighbourhood %in% barrios_NA), ]
+print(unique(df_madrid_filtrado$Neighbourhood))
+</code></pre>
+<hr>
+<p>El barrio parece ser un indicador importante para los metros cuadrados de un apartamento.</p>
+<p>Vamos a agrupar los barrios por metros cuadrados. Podemos usar una matriz de similaridad de Tukey tal y como hicimos en el curso de estadística:</p>
+<pre class="{r}"><code>#options(repr.plot.height=12,repr.plot.width=12,repr.plot.res = 300)
+
+tky&lt;-TukeyHSD(aov( formula=Square.Meters~Neighbourhood, data=df_madrid_filtrado ))
+tky.result&lt;-data.frame(tky$Neighbourhood)
+cn &lt;-sort(unique(df_madrid_filtrado$Neighbourhood))
+resm &lt;- matrix(NA, length(cn),length(cn))
+rownames(resm) &lt;- cn
+colnames(resm) &lt;- cn
+resm[lower.tri(resm) ] &lt;- round(tky.result$p.adj,4)
+resm[upper.tri(resm) ] &lt;- t(resm)[upper.tri(resm)] 
+diag(resm) &lt;- 1
+library(ggplot2)
+library(reshape2)
+dfResm &lt;- melt(resm)
+ggplot(dfResm, aes(x=Var1, y=Var2, fill=value))+
+  geom_tile(colour = "black")+
+  scale_fill_gradient(low = "white",high = "steelblue")+
+  ylab("Class")+xlab("Class")+theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),legend.position="none")
+</code></pre>
+<ol start="9" type="1">
+<li>Usando como variable de distancia: 1-resm Dibuja un dendrograma de los diferentes barrios.</li>
+</ol>
+<pre class="{r}"><code>
+print(resm)
+dist_matrix &lt;- 1 - resm
+sim_matrix &lt;- as.dist(dist_matrix)
+hclust_result &lt;- hclust(sim_matrix,method="complete")
+hcd1 &lt;- as.dendrogram(hclust_result)
+#par(cex=0.3)
+plot(hcd1)
+
+</code></pre>
+<pre class="{r}"><code>
+print(resm)
+dist_matrix &lt;- 1 - resm
+sim_matrix &lt;- as.dist(dist_matrix)
+hclust_result &lt;- hclust(sim_matrix,method="average")
+hcd2 &lt;- as.dendrogram(hclust_result)
+#par(cex=0.3)
+plot(hcd2)</code></pre>
+<hr>
+<ol start="10" type="1">
+<li>¿Que punto de corte sería el aconsejable?, ¿cuantos clusters aparecen?</li>
+</ol>
+<pre class="{r}"><code>
+#library(GGally)
+
+#print(names(df_madrid_filtrado))
+#ggpairs(df_madrid_filtrado[, c("Neighbourhood", "Accommodates", "Bathrooms", "Bedrooms", "Beds", "Price", "Square.Feet", "Guests.Included", "Extra.People", "Review.Scores.Rating", "Latitude", "Longitude", "Square.Meters")],
+#         lower = list(continuous = wrap("points", alpha = 0.3, size = 0.1, color = 'blue')),
+#         cardinality_threshold = 38)
+</code></pre>
+<pre class="{r}"><code>library(cluster)
+
+qsil&lt;-c()
+for (k_try in 2:20){
+    clusters &lt;- cutree(hcd1, k=k_try)
+    ss&lt;-silhouette(clusters, sim_matrix)    
+    qsil[k_try]&lt;-mean(ss[, "sil_width"])
+}
+plot(qsil)
+# entre 2 o 3 recomendado
+k_value =3</code></pre>
+<pre class="{r}"><code>
+library(dendextend)
+
+clusters &lt;- cutree(hcd1, k=k_value)
+plot(color_branches(hcd1, k=k_value),leaflab="none")
+
+library(cluster)
+ss&lt;-silhouette(clusters, sim_matrix)
+plot(ss,main = "Gráfico de Silhouette", col=1:max(clusters),border=NA)
+</code></pre>
+<hr>
+<ol start="11" type="1">
+<li>Vamos a crear una nueva columna en el dataframe df_madrid con un nuevo identificador marcado por los clusters obtenidos. Esta columna la llamaremos neighb_id</li>
+</ol>
+<pre class="{r}"><code>print(clusters)
+names(clusters[clusters==1])
+
+print(unique(df_madrid_filtrado$Neighbourhood))
+
+
+for (i in 1:k_value) {
+  label_barrios &lt;- names(clusters[clusters==i])
+  df_madrid_filtrado$neighb_id[df_madrid_filtrado$Neighbourhood %in% label_barrios] &lt;- i
+
+}
+
+print(df_madrid_filtrado$neighb_id)
+
+suppressMessages(library(dplyr))
+df_madrid_filtrado %&gt;% summary()
+
+print(df_madrid_filtrado$Neighbourhood[is.na(df_madrid_filtrado$Neighbourhood)])
+</code></pre>
+<hr>
+<ol start="12" type="1">
+<li>Vamos a crear dos grupos, uno test y otro train.</li>
+</ol>
+<pre class="{r}"><code>set.seed(1234)
+
+# Dividir los datos en conjuntos de entrenamiento y prueba
+train_indices &lt;- sample(nrow(df_madrid_filtrado), floor(0.7 * nrow(df_madrid_filtrado)))
+df_train &lt;- df_madrid_filtrado[train_indices, ]
+df_test &lt;- df_madrid_filtrado[-train_indices, ]
+
+</code></pre>
+<hr>
+<ol start="13" type="1">
+<li>Tratamos de predecir los metros cuadrados en función del resto de columnas del dataframe.</li>
+</ol>
+<pre class="{r}"><code>
+# Obtener las categorías únicas en df_train$Neighbourhood
+categories_train &lt;- unique(df_train$Neighbourhood)
+
+# Obtener las categorías únicas en df_test$Neighbourhood
+categories_test &lt;- unique(df_test$Neighbourhood)
+
+# Verificar si las categorías de df_train están en df_test
+categories_in_test &lt;- intersect(categories_train, categories_test)
+
+# Verificar si las categorías de df_test están en df_train
+categories_in_train &lt;- intersect(categories_test, categories_train)
+
+# Imprimir los resultados
+cat("Categorías en df_train presentes en df_test:", categories_in_test, "\n")
+cat("Categorías en df_test presentes en df_train:", categories_in_train, "\n")
+</code></pre>
+<pre class="{r}"><code>
+# Guardar la columna "Square.Meters" de df_train en y_train
+y_train &lt;- df_train$Square.Meters
+X_train &lt;- df_train[, !colnames(df_train) %in% c("Square.Meters", "Square.Feet", "Neighbourhood")]
+
+# Guardar la columna "Square.Meters" de df_test en y_test
+y_test &lt;- df_test$Square.Meters
+X_test &lt;- df_test[, !colnames(df_test) %in% c("Square.Meters", "Square.Feet", "Neighbourhood")]
+
+
+# Ajustar el modelo de regresión lineal múltiple para el conjunto de entrenamiento
+model &lt;- lm(y_train ~ ., data = X_train)
+summary(model)
+
+# Obtener las predicciones para el conjunto de prueba
+predictions &lt;- predict(model, newdata = X_test)
+
+print(predictions)</code></pre>
+<hr>
+<ol start="14" type="1">
+<li>Mirad el histograma de los residuos sobre el conjunto de test para evaluar la calidad de vuestro modelo</li>
+</ol>
+<pre class="{r}"><code>
+# Obtener los residuos del modelo para el conjunto de prueba
+residuos &lt;- y_test - predictions
+
+print(residuos)
+
+# Generar el histograma de los residuos
+hist(residuos, breaks = 20, main = "Histograma de Residuos", xlab = "Residuos")
+</code></pre>
+<hr>
+<ol start="15" type="1">
+<li>Si tuvieramos un anuncio de un apartamento para 6 personas (Accommodates), con 1 baño, con un precio de 80€/noche y 3 habitaciones en el barrio de Sol, con 3 camas y un review de 80. ¿Cuantos metros cuadrados tendría? Si tu modelo necesita algúna variable adicional puedes inventartela dentro del rango de valores del dataset. ¿Como varía sus metros cuadrados con cada habitación adicional?</li>
+</ol>
+<pre class="{r}"><code>
+
+#print(X_test[1, ])
+#print(colnames(X_test))
+
+new_row &lt;- data.frame(Accommodates = 6,
+                      Bathrooms = 1,
+                      Bedrooms = 3,
+                      Beds = 3,
+                      Price = 80,
+                      Guests.Included = 2,
+                      Extra.People = 0,
+                      Review.Scores.Rating = 80,
+                      Latitude = 40.4167,
+                      Longitude = -3.70325,
+                      neighb_id = 1)
+predictions &lt;- predict(model, newdata = new_row)
+
+print(predictions)
+
+room &lt;- 10
+prediction_sum &lt;- 0
+previous_prediction &lt;- NA
+increment_sum &lt;- 0
+
+for (i in 1:room) {
+  new_row &lt;- data.frame(Accommodates = 6,
+                        Bathrooms = 1,
+                        Bedrooms = i,
+                        Beds = 3,
+                        Price = 80,
+                        Guests.Included = 2,
+                        Extra.People = 0,
+                        Review.Scores.Rating = 80,
+                        Latitude = 40.4167,
+                        Longitude = -3.70325,
+                        neighb_id = 1)
+  predictions &lt;- predict(model, newdata = new_row)
+  print(i)
+  print(predictions)
+  
+  prediction_sum &lt;- prediction_sum + predictions
+  
+  if (!is.na(previous_prediction)) {
+    increment &lt;- predictions - previous_prediction
+    increment_sum &lt;- increment_sum + increment
+  }
+  
+  previous_prediction &lt;- predictions
+}
+
+mean_increment &lt;- increment_sum / (room - 1)
+
+print("Cada vez que aumenta el numero de habitaciones aumenta los metros cuadrados adicionales en:")
+print(mean_increment)
+</code></pre>
+<hr>
+<ol start="16" type="1">
+<li>Rellenar los Square.Meters con valor NA con el estimado con el modelo anterior.</li>
+</ol>
+<pre class="{r}"><code>
+for (i in 1:k_value) {
+  label_barrios &lt;- names(clusters[clusters==i])
+  df_madrid$neighb_id[df_madrid$Neighbourhood %in% label_barrios] &lt;- i
+
+}
+
+na_rows &lt;- which(is.na(df_madrid$Square.Meters))
+#print(na_rows)
+# Crear el nuevo dataset de prueba con las filas correspondientes
+df_test &lt;- df_madrid[na_rows, ]
+
+# Imprimir las columnas del nuevo dataset de prueba
+print(names(df_test))
+
+# Eliminar la columna "Neighbourhood" del dataframe df_test
+df_test &lt;- df_test[, !colnames(df_test) %in% c("Square.Meters", "Square.Feet", "Neighbourhood")]
+
+print(head(df_test))
+# Loop para predecir los valores de "Square.Meters" para cada fila
+for (i in 1:nrow(df_test)) {
+  new_row &lt;- df_test[i, ]
+  prediction &lt;- predict(model, newdata = new_row)
+  df_test$Square.Meters[i] &lt;- prediction
+}
+
+print(head(df_test))
+
+
+</code></pre>
+<hr>
+<ol start="17" type="1">
+<li>Usar PCA para encontrar el apartamento más cercano a uno dado. Este algoritmo nos ayudaría a dado un apartamento que el algoritmo nos devolvería los 5 apartamentos más similares.</li>
+</ol>
+<p>Crearemos una función tal que le pasemos un apartamento con los siguientes datos: * Accommodates * Bathrooms * Bedrooms * Beds * Price * Guests.Included * Extra.People * Review.Scores.Rating * Latitude * Longitude * Square.Meters</p>
+<p>y nos devuelva los 5 más similares de:</p>
+<pre class="{r}"><code>
+
+train_matrix &lt;- df_test[, !colnames(df_test) %in% c("neighb_id")]
+print(names(train_matrix))
+print(train_matrix)
+# Eliminar filas con NA utilizando na.omit()
+train_matrix &lt;- na.omit(train_matrix)
+print(train_matrix)
+
+prmadrid&lt;-prcomp(train_matrix,center = TRUE, scale = TRUE)
+
+
+plot(prmadrid$sdev^2/sum(prmadrid$sdev^2),main="Autovalores")
+
+</code></pre>
+<pre class="{r}"><code>new_apartment &lt;- data.frame(Accommodates = 6,
+                      Bathrooms = 1,
+                      Bedrooms = 3,
+                      Beds = 3,
+                      Price = 80,
+                      Guests.Included = 2,
+                      Extra.People = 0,
+                      Review.Scores.Rating = 80,
+                      Latitude = 40.4167,
+                      Longitude = -3.70325,
+                      Square.Meters = 79.34237)
+
+
+
+number_of_pca_components&lt;-3
+knn&lt;-5
+
+Apc&lt;-prmadrid$x[,1:number_of_pca_components]
+
+find_similar_apartments &lt;- function(new_apartment, train_matrix, prmadrid, knn = 5) {
+    for (id_test in 1:nrow(new_row)){
+    
+        orig_pic&lt;-new_row[id_test,]
+        t_pic &lt;-predict(prmadrid,newdata = orig_pic)
+    
+        t_pic&lt;-matrix(t_pic[1:number_of_pca_components],nrow=1)
+            
+        dist&lt;-rowSums((t_pic[rep(1, times = nrow(Apc)), ]-Apc)^2)    
+        knn_tags&lt;-rownames(train_matrix)[order(dist,decreasing = F) %in% c(1:knn)]
+
+        print(knn_tags)
+        similar_apartments &lt;- train_matrix[knn_tags, ]
+            return(similar_apartments)
+    
+    }
+}
+
+similar_apartments &lt;- find_similar_apartments(new_apartment, train_matrix, prmadrid, knn)
+print(similar_apartments)</code></pre>
+<pre><code></code></pre>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

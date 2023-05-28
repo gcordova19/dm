@@ -1,1 +1,3 @@
-# dm
+# Entrega 
+
+Ejercicios de data mining
